@@ -1,0 +1,34 @@
+{
+  "politiques": {
+    "monarchie": {
+      "stabilité": 60,
+      "foi": 50,
+      "soutien_guerre": 40,
+      "description": "Un système politique où le pouvoir est concentré entre les mains d'un monarque héréditaire."
+    },
+    "féodalité": {
+      "stabilité": 40,
+      "foi": 40,
+      "soutien_guerre": 50,
+      "description": "Un système où le pouvoir est partagé entre un suzerain et ses vassaux, liant autorité et obligations militaires."
+    },
+    "république": {
+      "stabilité": 45,
+      "foi": 30,
+      "soutien_guerre": 25,
+      "description": "Un système où le pouvoir est détenu par des représentants élus par les citoyens."
+    },
+    "théocratie": {
+      "stabilité": 55,
+      "foi": 80,
+      "soutien_guerre": 35,
+      "description": "Un système où le pouvoir politique est détenu par une élite religieuse au nom d'une divinité."
+    },
+    "dictature": {
+      "stabilité": 70,
+      "foi": 20,
+      "soutien_guerre": 75,
+      "description": "Un système autoritaire où le pouvoir est concentré dans les mains d'un seul dirigeant non héréditaire."
+    }
+  }
+} 

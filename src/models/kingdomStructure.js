@@ -1,4 +1,25 @@
 // Structure simplifiée d'un royaume pour RP géopolitique
+const path = require('path');
+const fs = require('fs');
+
+// Charger les données des politiques depuis le fichier JSON
+const politiquesPath = path.join(__dirname, '../data/politiques.json');
+let POLITIQUES = {};
+try {
+    const politiquesRaw = fs.readFileSync(politiquesPath, 'utf8');
+    const politiquesData = JSON.parse(politiquesRaw);
+    POLITIQUES = politiquesData.politiques;
+} catch (error) {
+    console.error('Erreur lors du chargement des politiques:', error);
+    // Valeurs par défaut au cas où
+    POLITIQUES = {
+        monarchie: { stabilité: 60, foi: 50, soutien_guerre: 40 },
+        féodalité: { stabilité: 40, foi: 40, soutien_guerre: 50 },
+        république: { stabilité: 45, foi: 30, soutien_guerre: 25 },
+        théocratie: { stabilité: 55, foi: 80, soutien_guerre: 35 },
+        dictature: { stabilité: 70, foi: 20, soutien_guerre: 75 }
+    };
+}
 
 /**
  * Crée un royaume avec des valeurs par défaut
@@ -6,6 +27,98 @@
  * @returns {Object} Structure du royaume
  */
 function createKingdomStructure(initialData) {
+    // Déterminer le type de politique
+    const politique = initialData.politique || 'monarchie';
+    const politiqueBase = POLITIQUES[politique] || POLITIQUES.monarchie;
+    
+    // Calculer les modificateurs pour les stats en pourcentage uniquement
+    const mods = initialData.statsModificateurs || {
+        stabilité: 0,
+        foi: 0,
+        soutien_guerre: 0
+    };
+    
+    // Fonction pour calculer les stats en pourcentage avec limites
+    const calculerStatPourcentage = (base, mod) => {
+        return Math.max(0, Math.min(100, base + mod));
+    };
+    
+    // Calculer les stats en pourcentage finales
+    const statsEnPourcentage = {
+        stabilité: calculerStatPourcentage(politiqueBase.stabilité, mods.stabilité),
+        foi: calculerStatPourcentage(politiqueBase.foi, mods.foi),
+        soutien_guerre: calculerStatPourcentage(politiqueBase.soutien_guerre, mods.soutien_guerre)
+    };
+    
+    // Valeurs par défaut pour les stats en points selon le type de politique
+    let prestigeDefaut = 10;
+    let influenceDefaut = 10;
+    let prospéritéDefaut = 20;
+    let rechercheDefaut = 10;
+    
+    switch(politique) {
+        case 'monarchie':
+            prestigeDefaut = 30;
+            influenceDefaut = 20;
+            prospéritéDefaut = 25;
+            rechercheDefaut = 15;
+            break;
+        case 'féodalité':
+            prestigeDefaut = 20;
+            influenceDefaut = 15;
+            prospéritéDefaut = 30;
+            rechercheDefaut = 10;
+            break;
+        case 'république':
+            prestigeDefaut = 10;
+            influenceDefaut = 25;
+            prospéritéDefaut = 45;
+            rechercheDefaut = 35;
+            break;
+        case 'théocratie':
+            prestigeDefaut = 25;
+            influenceDefaut = 40;
+            prospéritéDefaut = 20;
+            rechercheDefaut = 20;
+            break;
+        case 'dictature':
+            prestigeDefaut = 5;
+            influenceDefaut = 10;
+            prospéritéDefaut = 15;
+            rechercheDefaut = 10;
+            break;
+    }
+    
+    // Déterminer le taux d'imposition par défaut selon la politique
+    let tauxImpotDefaut = 10; // Valeur par défaut
+    
+    switch(politique) {
+        case 'monarchie':
+            tauxImpotDefaut = 10;
+            break;
+        case 'féodalité':
+            tauxImpotDefaut = 15;
+            break;
+        case 'république':
+            tauxImpotDefaut = 8;
+            break;
+        case 'théocratie':
+            tauxImpotDefaut = 12;
+            break;
+        case 'dictature':
+            tauxImpotDefaut = 20;
+            break;
+    }
+    
+    // Calculer les revenus initiaux avec le economyService
+    let revenusTaxes = Math.floor((initialData.population?.total || 1000) * (tauxImpotDefaut / 100) * 0.6);
+    let revenusCommerce = Math.floor((initialData.population?.total || 1000) * (tauxImpotDefaut / 100) * 0.3);
+    let revenusProduction = Math.floor((initialData.population?.total || 1000) * (tauxImpotDefaut / 100) * 0.1);
+    let revenusTotal = revenusTaxes + revenusCommerce + revenusProduction;
+    
+    // Calculer les dépenses administratives
+    const depensesAdmin = Math.floor((initialData.population?.total || 1000) * 0.03);
+    
     return {
         // Informations de base
         id: initialData.id || Date.now().toString(),
@@ -13,22 +126,40 @@ function createKingdomStructure(initialData) {
         description: initialData.description || '',
         owner: initialData.owner || '',
         createdAt: initialData.createdAt || new Date().toISOString(),
+        politique: politique,
+        
+        // Statistiques de base pour les stats en pourcentage uniquement
+        statsBase: { 
+            stabilité: politiqueBase.stabilité,
+            foi: politiqueBase.foi,
+            soutien_guerre: politiqueBase.soutien_guerre
+        },
+        
+        // Modificateurs de statistiques pour les stats en pourcentage uniquement
+        statsModificateurs: {
+            stabilité: mods.stabilité,
+            foi: mods.foi,
+            soutien_guerre: mods.soutien_guerre
+        },
         
         // Statistiques primaires
         stats: {
-            stabilité: initialData.stats?.stabilité || 50, // 0-100
-            prestige: initialData.stats?.prestige || 10, // 0-100
-            influence: initialData.stats?.influence || 10, // 0-100
-            prospérité: initialData.stats?.prospérité || 30, // 0-100
-            foi: initialData.stats?.foi || 40, // 0-100
-            recherche: initialData.stats?.recherche || 20, // 0-100
+            // Stats en pourcentage (base + modificateurs)
+            stabilité: statsEnPourcentage.stabilité,
+            foi: statsEnPourcentage.foi,
+            soutien_guerre: statsEnPourcentage.soutien_guerre,
+            
+            // Stats en points (valeurs absolues)
+            prestige: initialData.stats?.prestige !== undefined ? initialData.stats.prestige : prestigeDefaut,
+            influence: initialData.stats?.influence !== undefined ? initialData.stats.influence : influenceDefaut,
+            prospérité: initialData.stats?.prospérité !== undefined ? initialData.stats.prospérité : prospéritéDefaut,
+            recherche: initialData.stats?.recherche !== undefined ? initialData.stats.recherche : rechercheDefaut
         },
         
         // Population et démographie
         population: {
             total: initialData.population?.total || 1000,
             capacité: initialData.population?.capacité || 2000, // Maximum supporté
-            bonheur: initialData.population?.bonheur || 60, // 0-100
             classes: {
                 paysans: initialData.population?.classes?.paysans || 800, // 80%
                 bourgeois: initialData.population?.classes?.bourgeois || 150, // 15%
@@ -38,18 +169,19 @@ function createKingdomStructure(initialData) {
         
         // Économie
         économie: {
+            tauxImpot: initialData.économie?.tauxImpot || tauxImpotDefaut, // Taux d'imposition en %
             trésor: initialData.économie?.trésor || 1000, // Or
             revenus: {
-                taxes: initialData.économie?.revenus?.taxes || 50, // Or par mois
-                commerce: initialData.économie?.revenus?.commerce || 30, // Or par mois
-                production: initialData.économie?.revenus?.production || 20, // Or par mois
-                total: initialData.économie?.revenus?.total || 100 // Or par mois
+                taxes: initialData.économie?.revenus?.taxes || revenusTaxes,
+                commerce: initialData.économie?.revenus?.commerce || revenusCommerce,
+                production: initialData.économie?.revenus?.production || revenusProduction,
+                total: initialData.économie?.revenus?.total || revenusTotal
             },
             dépenses: {
                 maintenance: initialData.économie?.dépenses?.maintenance || 20, // Or par mois
                 armée: initialData.économie?.dépenses?.armée || 30, // Or par mois
-                administration: initialData.économie?.dépenses?.administration || 10, // Or par mois
-                total: initialData.économie?.dépenses?.total || 60 // Or par mois
+                administration: initialData.économie?.dépenses?.administration || depensesAdmin, // Or par mois
+                total: initialData.économie?.dépenses?.total || (50 + depensesAdmin) // Or par mois
             }
         },
         
@@ -142,7 +274,7 @@ function createKingdomStructure(initialData) {
                 population: initialData.territoire?.capitale?.population || 500,
                 défense: initialData.territoire?.capitale?.défense || 100,
             },
-            taille_totale: initialData.territoire?.taille_totale || 1, // km²
+            taille_totale: initialData.territoire?.taille_totale || 10, // km²
             géographie: {
                 climat: initialData.territoire?.géographie?.climat || 'tempéré',
                 terrain: initialData.territoire?.géographie?.terrain || 'plaines',
@@ -160,6 +292,16 @@ function createKingdomStructure(initialData) {
     };
 }
 
+// Export des types de politique pour utilisation ailleurs
+const TYPES_POLITIQUE = {
+    MONARCHIE: 'monarchie',
+    FÉODALITÉ: 'féodalité',
+    RÉPUBLIQUE: 'république',
+    THÉOCRATIE: 'théocratie',
+    DICTATURE: 'dictature'
+};
+
 module.exports = {
-    createKingdomStructure
+    createKingdomStructure,
+    TYPES_POLITIQUE
 }; 

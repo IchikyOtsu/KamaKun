@@ -1,7 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const kingdomService = require('../../services/kingdomService');
 const { createSuccessEmbed, createErrorEmbed, createKingdomEmbed } = require('../../utils/embeds');
-const { TYPES_POLITIQUE } = require('../../models/kingdomStructure');
 const fs = require('fs');
 const path = require('path');
 
@@ -17,20 +16,12 @@ try {
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('create-kingdom')
-        .setDescription('Crée un nouveau royaume')
-        .addStringOption(option =>
-            option.setName('name')
-                .setDescription('Le nom de votre royaume')
-                .setRequired(true))
-        .addStringOption(option =>
-            option.setName('description')
-                .setDescription('Description de votre royaume')
-                .setRequired(false))
+        .setName('set-policy')
+        .setDescription('Change le système politique de votre royaume')
         .addStringOption(option => {
             const politiqueOption = option.setName('politique')
-                .setDescription('Système politique de votre royaume')
-                .setRequired(false);
+                .setDescription('Nouveau système politique pour votre royaume')
+                .setRequired(true);
                 
             // Ajouter chaque type de politique comme choix
             politiqueOption.addChoices(
@@ -42,37 +33,50 @@ module.exports = {
             );
             
             return politiqueOption;
-        }),
+        })
+        .addStringOption(option =>
+            option.setName('confirmation')
+                .setDescription('Tapez "confirmer" pour valider le changement (affecte vos statistiques de base)')
+                .setRequired(true)),
 
     async execute(interaction) {
-        const name = interaction.options.getString('name');
-        const description = interaction.options.getString('description') || '';
-        const politique = interaction.options.getString('politique') || 'monarchie'; // Monarchie par défaut
+        const politique = interaction.options.getString('politique');
+        const confirmation = interaction.options.getString('confirmation');
         const userId = interaction.user.id;
+        
+        // Vérification de la confirmation
+        if (confirmation.toLowerCase() !== 'confirmer') {
+            return interaction.reply({
+                embeds: [createErrorEmbed(
+                    '⚠️ Confirmation requise',
+                    'Vous devez taper "confirmer" pour valider le changement de politique. Ce changement impactera les statistiques de base de votre royaume.'
+                )],
+                ephemeral: true
+            });
+        }
         
         // Obtenir la description de la politique choisie
         const politiqueDescription = politiquesData[politique]?.description || '';
 
         try {
-            // Vérifier si l'utilisateur a déjà un royaume
+            // Vérifier si l'utilisateur possède un royaume
             const existingKingdom = await kingdomService.findKingdomByOwner(userId);
-            if (existingKingdom) {
+            if (!existingKingdom) {
                 return interaction.reply({
                     embeds: [createErrorEmbed(
                         '❌ Erreur',
-                        'Vous possédez déjà un royaume!'
+                        'Vous ne possédez pas de royaume! Créez-en un d\'abord avec /create-kingdom.'
                     )],
                     ephemeral: true
                 });
             }
-
-            // Vérifier si le nom est déjà pris
-            const nameExists = await kingdomService.findKingdomByName(name);
-            if (nameExists) {
+            
+            // Vérifier si c'est déjà la même politique
+            if (existingKingdom.politique === politique) {
                 return interaction.reply({
                     embeds: [createErrorEmbed(
-                        '❌ Erreur',
-                        'Ce nom de royaume est déjà pris!'
+                        '❌ Politique identique',
+                        `Votre royaume utilise déjà le système politique "${politique}".`
                     )],
                     ephemeral: true
                 });
@@ -81,45 +85,27 @@ module.exports = {
             // Message d'attente pour une meilleure UX
             await interaction.deferReply();
             
-            // Créer le nouveau royaume
-            const kingdom = await kingdomService.createKingdom({
-                name,
-                description,
-                owner: userId,
-                politique: politique,
-                population: 1000,
-                gold: 1000,
-                food: 1000,
-                military: 100,
-                resources: {
-                    wood: 500,
-                    stone: 500,
-                    iron: 200,
-                    goldMines: 1
-                },
-                buildings: {
-                    farms: 2,
-                    mines: 1,
-                    barracks: 1,
-                    markets: 1
-                },
-                alliances: [],
-                enemies: [],
-                territory: {
-                    size: 1,
-                    climate: 'tempéré',
-                    fertility: 50
-                }
+            // Mettre à jour la politique du royaume
+            const anciennePolitique = existingKingdom.politique;
+            const kingdom = await kingdomService.updateKingdom(existingKingdom.id, {
+                politique: politique
             });
 
-            // Information sur le type de politique choisi
-            const politiqueInfo = `Type de gouvernement: **${politique.charAt(0).toUpperCase() + politique.slice(1)}**\n${politiqueDescription}`;
+            // Information sur le changement de politique
+            const politiqueInfo = `
+**Ancien système:** ${anciennePolitique.charAt(0).toUpperCase() + anciennePolitique.slice(1)}
+**Nouveau système:** ${politique.charAt(0).toUpperCase() + politique.slice(1)}
+
+${politiqueDescription}
+
+⚠️ Les statistiques de base de votre royaume ont été ajustées selon ce nouveau système politique.
+`;
             
             await interaction.editReply({
                 embeds: [
                     createSuccessEmbed(
-                        '🏰 Royaume Créé',
-                        `Le royaume "${name}" a été créé avec succès!\n\n${politiqueInfo}`
+                        '🏰 Politique Modifiée',
+                        `La politique du royaume "${existingKingdom.name}" a été modifiée avec succès!\n\n${politiqueInfo}`
                     ),
                     createKingdomEmbed(kingdom)
                 ]
@@ -131,7 +117,7 @@ module.exports = {
             await replyMethod.call(interaction, {
                 embeds: [createErrorEmbed(
                     '❌ Erreur',
-                    'Une erreur est survenue lors de la création du royaume.'
+                    'Une erreur est survenue lors du changement de politique.'
                 )],
                 ephemeral: true
             });
