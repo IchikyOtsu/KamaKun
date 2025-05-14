@@ -2,7 +2,6 @@ require('dotenv').config();
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const fs = require('node:fs');
 const path = require('node:path');
-const mongoose = require('mongoose');
 
 const client = new Client({
     intents: [
@@ -11,11 +10,6 @@ const client = new Client({
         GatewayIntentBits.MessageContent
     ]
 });
-
-// Connexion à MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('Connecté à MongoDB'))
-    .catch(err => console.error('Erreur de connexion à MongoDB:', err));
 
 client.commands = new Collection();
 
@@ -63,5 +57,4 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
-// Connexion du bot avec le token
 client.login(process.env.TOKEN); 

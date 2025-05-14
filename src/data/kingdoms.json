@@ -1,0 +1,215 @@
+{
+  "kingdoms": [
+    {
+      "id": "1747249959020",
+      "name": "Ocréa",
+      "description": "",
+      "owner": "598070479689089034",
+      "createdAt": "2025-05-14T19:12:39.020Z",
+      "foundedYear": 800,
+      "stats": {
+        "stabilité": 50,
+        "prestige": 10,
+        "influence": 10,
+        "prospérité": 30,
+        "foi": 40,
+        "recherche": 20
+      },
+      "population": {
+        "total": 1000,
+        "croissance": 1.5,
+        "capacité": 2000,
+        "bonheur": 60,
+        "classes": {
+          "paysans": 800,
+          "bourgeois": 150,
+          "nobles": 50
+        },
+        "main_doeuvre": {
+          "disponible": 600,
+          "fermiers": 400,
+          "mineurs": 100,
+          "artisans": 50,
+          "soldats": 50,
+          "marchands": 30,
+          "prêtres": 20,
+          "savants": 10
+        }
+      },
+      "économie": {
+        "trésor": 1000,
+        "revenus": {
+          "taxes": 50,
+          "commerce": 30,
+          "production": 20,
+          "total": 100
+        },
+        "dépenses": {
+          "maintenance": 20,
+          "armée": 30,
+          "administration": 10,
+          "projets": 0,
+          "total": 60
+        },
+        "tauxTaxation": 10,
+        "inflationAnnuelle": 2
+      },
+      "ressources": {
+        "nourriture": {
+          "stock": 1000,
+          "production": 100,
+          "consommation": 80
+        },
+        "bois": {
+          "stock": 500,
+          "production": 50,
+          "consommation": 30
+        },
+        "pierre": {
+          "stock": 500,
+          "production": 40,
+          "consommation": 20
+        },
+        "fer": {
+          "stock": 200,
+          "production": 20,
+          "consommation": 15
+        },
+        "luxe": {
+          "stock": 50,
+          "production": 5,
+          "consommation": 10
+        }
+      },
+      "armée": {
+        "infanterie": {
+          "miliciens": 30,
+          "soldats": 15,
+          "vétérans": 5
+        },
+        "cavalerie": {
+          "légère": 0,
+          "lourde": 0,
+          "chevaliers": 0
+        },
+        "archers": {
+          "apprentis": 10,
+          "arbalétriers": 0,
+          "élites": 0
+        },
+        "sièges": {
+          "catapultes": 0,
+          "béliers": 0,
+          "tours": 0
+        },
+        "force_totale": 60,
+        "moral": 70,
+        "expérience": 10,
+        "commandants": []
+      },
+      "bâtiments": {
+        "château": {
+          "niveau": 1,
+          "défense": 100,
+          "capacité": 200
+        },
+        "agriculture": {
+          "fermes": 2,
+          "moulins": 1,
+          "pâturages": 1
+        },
+        "production": {
+          "mines": 1,
+          "carrières": 1,
+          "scieries": 1,
+          "forges": 1
+        },
+        "militaires": {
+          "casernes": 1,
+          "écuries": 0,
+          "champs_de_tir": 0,
+          "ateliers_de_siège": 0
+        },
+        "économiques": {
+          "marchés": 1,
+          "ateliers": 1,
+          "guilde_marchande": 0,
+          "banque": 0
+        },
+        "religieux": {
+          "temple": 1,
+          "monastère": 0,
+          "cathédrale": 0
+        },
+        "éducation": {
+          "école": 0,
+          "bibliothèque": 0,
+          "université": 0
+        }
+      },
+      "territoire": {
+        "capitale": {
+          "nom": "Capitale de Ocréa",
+          "population": 500,
+          "défense": 100
+        },
+        "provinces": [],
+        "taille_totale": 1,
+        "frontières": [],
+        "géographie": {
+          "climat": "tempéré",
+          "terrain": "plaines",
+          "fertilité": 50,
+          "ressources_naturelles": [
+            "bois",
+            "pierre"
+          ]
+        }
+      },
+      "recherche": {
+        "points": 0,
+        "production_mensuelle": 5,
+        "technologies_débloquées": [],
+        "en_cours": null
+      },
+      "diplomatie": {
+        "alliances": [],
+        "ennemis": [],
+        "pactes_commerciaux": [],
+        "vassaux": [],
+        "suzerain": null,
+        "réputation": 50,
+        "relations": {}
+      },
+      "culture": {
+        "principale": "occidentale",
+        "influences": [],
+        "innovations": 0
+      },
+      "religion": {
+        "principale": "catholique",
+        "dévotion": 50,
+        "temples": 1
+      },
+      "historique": [],
+      "événements_actifs": [],
+      "personnages": {
+        "dirigeant": {
+          "nom": "Dirigeant",
+          "titre": "Roi",
+          "compétences": {
+            "diplomatie": 5,
+            "militaire": 5,
+            "intrigue": 5,
+            "administration": 5,
+            "érudition": 5
+          }
+        },
+        "conseillers": [],
+        "nobles": []
+      },
+      "dernière_mise_à_jour": "2025-05-14T19:12:39.021Z",
+      "mois_écoulés": 0
+    }
+  ]
+}

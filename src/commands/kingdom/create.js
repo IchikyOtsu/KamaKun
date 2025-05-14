@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
-const Kingdom = require('../../models/Kingdom');
+const kingdomService = require('../../services/kingdomService');
+const { createSuccessEmbed, createErrorEmbed, createKingdomEmbed } = require('../../utils/embeds');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -21,45 +22,76 @@ module.exports = {
 
         try {
             // Vérifier si l'utilisateur a déjà un royaume
-            const existingKingdom = await Kingdom.findOne({ owner: userId });
+            const existingKingdom = await kingdomService.findKingdomByOwner(userId);
             if (existingKingdom) {
                 return interaction.reply({
-                    content: 'Vous possédez déjà un royaume!',
+                    embeds: [createErrorEmbed(
+                        '❌ Erreur',
+                        'Vous possédez déjà un royaume!'
+                    )],
                     ephemeral: true
                 });
             }
 
             // Vérifier si le nom est déjà pris
-            const nameExists = await Kingdom.findOne({ name: name });
+            const nameExists = await kingdomService.findKingdomByName(name);
             if (nameExists) {
                 return interaction.reply({
-                    content: 'Ce nom de royaume est déjà pris!',
+                    embeds: [createErrorEmbed(
+                        '❌ Erreur',
+                        'Ce nom de royaume est déjà pris!'
+                    )],
                     ephemeral: true
                 });
             }
 
             // Créer le nouveau royaume
-            const kingdom = new Kingdom({
+            const kingdom = await kingdomService.createKingdom({
                 name,
                 description,
-                owner: userId
+                owner: userId,
+                population: 1000,
+                gold: 1000,
+                food: 1000,
+                military: 100,
+                resources: {
+                    wood: 500,
+                    stone: 500,
+                    iron: 200,
+                    goldMines: 1
+                },
+                buildings: {
+                    farms: 2,
+                    mines: 1,
+                    barracks: 1,
+                    markets: 1
+                },
+                alliances: [],
+                enemies: [],
+                territory: {
+                    size: 1,
+                    climate: 'tempéré',
+                    fertility: 50
+                }
             });
 
-            await kingdom.save();
-
             await interaction.reply({
-                content: `🏰 Le royaume "${name}" a été créé avec succès!\n` +
-                        `Population: ${kingdom.population}\n` +
-                        `Or: ${kingdom.gold}\n` +
-                        `Nourriture: ${kingdom.food}\n` +
-                        `Force militaire: ${kingdom.military}`,
-                ephemeral: true
+                embeds: [
+                    createSuccessEmbed(
+                        '🏰 Royaume Créé',
+                        `Le royaume "${name}" a été créé avec succès!`
+                    ),
+                    createKingdomEmbed(kingdom)
+                ]
             });
 
         } catch (error) {
             console.error(error);
             await interaction.reply({
-                content: 'Une erreur est survenue lors de la création du royaume.',
+                embeds: [createErrorEmbed(
+                    '❌ Erreur',
+                    'Une erreur est survenue lors de la création du royaume.'
+                )],
                 ephemeral: true
             });
         }
